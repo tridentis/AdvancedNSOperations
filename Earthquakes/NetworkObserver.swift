@@ -16,23 +16,23 @@ struct NetworkObserver: OperationObserver {
     // MARK: Initilization
 
     init() { }
-    
+
     func operationDidStart(_ operation: Operation) {
         DispatchQueue.main.async {
             // Increment the network indicator's "reference count"
             NetworkIndicatorController.sharedIndicatorController.networkActivityDidStart()
         }
     }
-    
+
     func operation(_ operation: Operation, didProduceOperation newOperation: Foundation.Operation) { }
-    
+
     func operationDidFinish(_ operation: Operation, errors: [NSError]) {
         DispatchQueue.main.async {
             // Decrement the network indicator's "reference count".
             NetworkIndicatorController.sharedIndicatorController.networkActivityDidEnd()
         }
     }
-    
+
 }
 
 /// A singleton to manage a visual "reference count" on the network activity indicator.
@@ -42,32 +42,31 @@ private class NetworkIndicatorController {
     static let sharedIndicatorController = NetworkIndicatorController()
 
     fileprivate var activityCount = 0
-    
+
     fileprivate var visibilityTimer: Timer?
-    
+
     // MARK: Methods
-    
+
     func networkActivityDidStart() {
         assert(Thread.isMainThread, "Altering network activity indicator state can only be done on the main thread.")
 
         activityCount += 1
-        
+
         updateIndicatorVisibility()
     }
-    
+
     func networkActivityDidEnd() {
         assert(Thread.isMainThread, "Altering network activity indicator state can only be done on the main thread.")
-        
+
         activityCount -= 1
-        
+
         updateIndicatorVisibility()
     }
-    
+
     fileprivate func updateIndicatorVisibility() {
         if activityCount > 0 {
             showIndicator()
-        }
-        else {
+        } else {
             /*
                 To prevent the indicator from flickering on and off, we delay the
                 hiding of the indicator by one second. This provides the chance
@@ -78,13 +77,13 @@ private class NetworkIndicatorController {
             }
         }
     }
-    
+
     fileprivate func showIndicator() {
         visibilityTimer?.cancel()
         visibilityTimer = nil
         UIApplication.shared.isNetworkActivityIndicatorVisible = true
     }
-    
+
     fileprivate func hideIndicator() {
         visibilityTimer?.cancel()
         visibilityTimer = nil
@@ -97,19 +96,19 @@ class Timer {
     // MARK: Properties
 
     fileprivate var isCancelled = false
-    
+
     // MARK: Initialization
 
-    init(interval: TimeInterval, handler: @escaping ()->()) {
+    init(interval: TimeInterval, handler: @escaping ()->Void) {
         let when = DispatchTime.now() + Double(Int64(interval * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)
-        
+
         DispatchQueue.main.asyncAfter(deadline: when) { [weak self] in
             if self?.isCancelled == false {
                 handler()
             }
         }
     }
-    
+
     func cancel() {
         isCancelled = true
     }

@@ -16,17 +16,17 @@ struct TimeoutObserver: OperationObserver {
     // MARK: Properties
 
     static let timeoutKey = "Timeout"
-    
+
     fileprivate let timeout: TimeInterval
-    
+
     // MARK: Initialization
-    
+
     init(timeout: TimeInterval) {
         self.timeout = timeout
     }
-    
+
     // MARK: OperationObserver
-    
+
     func operationDidStart(_ operation: Operation) {
         // When the operation starts, queue up a block to cause it to time out.
         let when = DispatchTime.now() + Double(Int64(timeout * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)

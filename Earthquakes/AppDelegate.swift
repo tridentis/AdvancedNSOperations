@@ -13,13 +13,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // MARK: Properties
 
     var window: UIWindow?
-    
+
     // MARK: UIApplicationDelegate
 
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
         RemoteNotificationCondition.didFailToRegister(error as NSError)
     }
-    
+
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         RemoteNotificationCondition.didReceiveNotificationToken(deviceToken)
     }

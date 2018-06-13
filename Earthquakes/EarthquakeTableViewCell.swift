@@ -15,16 +15,16 @@ class EarthquakeTableViewCell: UITableViewCell {
     @IBOutlet var timestampLabel: UILabel!
     @IBOutlet var magnitudeLabel: UILabel!
     @IBOutlet var magnitudeImage: UIImageView!
-    
+
     // MARK: Configuration
-    
+
     func configure(_ earthquake: Earthquake) {
         timestampLabel.text = Earthquake.timestampFormatter.string(from: earthquake.timestamp)
 
         magnitudeLabel.text = Earthquake.magnitudeFormatter.string(from: NSNumber(value: earthquake.magnitude))
 
         locationLabel.text = earthquake.name
-        
+
         let imageName: String
 
         switch earthquake.magnitude {

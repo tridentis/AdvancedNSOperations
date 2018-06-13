@@ -17,13 +17,13 @@ import CoreLocation
 */
 class LocationOperation: Operation, CLLocationManagerDelegate {
     // MARK: Properties
-    
+
     fileprivate let accuracy: CLLocationAccuracy
     fileprivate var manager: CLLocationManager?
     fileprivate let handler: (CLLocation) -> Void
-    
+
     // MARK: Initialization
- 
+
     init(accuracy: CLLocationAccuracy, locationHandler: @escaping (CLLocation) -> Void) {
         self.accuracy = accuracy
         self.handler = locationHandler
@@ -31,7 +31,7 @@ class LocationOperation: Operation, CLLocationManagerDelegate {
         addCondition(LocationCondition(usage: .whenInUse))
         addCondition(MutuallyExclusive<CLLocationManager>())
     }
-    
+
     override func execute() {
         DispatchQueue.main.async {
             /*
@@ -42,35 +42,35 @@ class LocationOperation: Operation, CLLocationManagerDelegate {
             manager.desiredAccuracy = self.accuracy
             manager.delegate = self
             manager.startUpdatingLocation()
-            
+
             self.manager = manager
         }
     }
-    
+
     override func cancel() {
         DispatchQueue.main.async {
             self.stopLocationUpdates()
             super.cancel()
         }
     }
-    
+
     fileprivate func stopLocationUpdates() {
         manager?.stopUpdatingLocation()
         manager = nil
     }
-    
+
     // MARK: CLLocationManagerDelegate
-    
+
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last, location.horizontalAccuracy <= accuracy else {
             return
         }
-        
+
         stopLocationUpdates()
         handler(location)
         finish()
     }
-    
+
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         stopLocationUpdates()
         finishWithError(error as NSError)

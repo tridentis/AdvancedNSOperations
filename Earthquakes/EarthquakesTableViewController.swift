@@ -14,11 +14,11 @@ class EarthquakesTableViewController: UITableViewController {
     // MARK: Properties
 
     var fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>?
-    
+
     let operationQueue = OperationQueue()
-    
+
     // MARK: View Controller
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -28,13 +28,13 @@ class EarthquakesTableViewController: UITableViewController {
                 let request = NSFetchRequest<NSFetchRequestResult>(entityName: Earthquake.entityName)
 
                 request.sortDescriptors = [NSSortDescriptor(key: "timestamp", ascending: false)]
-                
+
                 request.fetchLimit = 100
-                
+
                 let controller = NSFetchedResultsController(fetchRequest: request, managedObjectContext: context, sectionNameKeyPath: nil, cacheName: nil)
-                
+
                 self.fetchedResultsController = controller
-                
+
                 self.updateUI()
             }
         }
@@ -54,14 +54,14 @@ class EarthquakesTableViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "earthquakeCell", for: indexPath) as! EarthquakeTableViewCell
-        
+
         if let earthquake = fetchedResultsController?.object(at: indexPath) as? Earthquake {
             cell.configure(earthquake)
         }
 
         return cell
     }
-    
+
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         /*
             Instead of performing the segue directly, we can wrap it in a `BlockOperation`.
@@ -80,13 +80,13 @@ class EarthquakesTableViewController: UITableViewController {
             as the operation finishes. Doing so would allow you to present a message
             to the user about why you were unable to perform the requested action.
         */
-        
+
         let operation = YMBlockOperation {
             self.performSegue(withIdentifier: "showEarthquake", sender: nil)
         }
-        
+
         operation.addCondition(MutuallyExclusive<UIViewController>())
-        
+
         let blockObserver = BlockObserver { _, errors in
             /*
                 If the operation errored (ex: a condition failed) then the segue
@@ -98,12 +98,12 @@ class EarthquakesTableViewController: UITableViewController {
                 }
             }
         }
-        
+
         operation.addObserver(blockObserver)
-        
+
         operationQueue.addOperation(operation)
     }
-    
+
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         guard let navigationVC = segue.destination as? UINavigationController,
                   let detailVC = navigationVC.viewControllers.first as? EarthquakeTableViewController else {
@@ -115,11 +115,11 @@ class EarthquakesTableViewController: UITableViewController {
             detailVC.earthquake = fetchedResultsController?.object(at: indexPath) as? Earthquake
         }
     }
-    
+
     @IBAction func startRefreshing(_ sender: UIRefreshControl) {
         getEarthquakes()
     }
-    
+
     fileprivate func getEarthquakes(_ userInitiated: Bool = true) {
         if let context = fetchedResultsController?.managedObjectContext {
             let getEarthquakesOperation = GetEarthquakesOperation(context: context) {
@@ -131,8 +131,7 @@ class EarthquakesTableViewController: UITableViewController {
 
             getEarthquakesOperation.userInitiated = userInitiated
             operationQueue.addOperation(getEarthquakesOperation)
-        }
-        else {
+        } else {
             /*
                 We don't have a context to operate on, so wait a bit and just make
                 the refresh control end.
@@ -143,12 +142,11 @@ class EarthquakesTableViewController: UITableViewController {
             }
         }
     }
-    
+
     fileprivate func updateUI() {
         do {
             try fetchedResultsController?.performFetch()
-        }
-        catch {
+        } catch {
             print("Error in the fetched results controller: \(error).")
         }
 

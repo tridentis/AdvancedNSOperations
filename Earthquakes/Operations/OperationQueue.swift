@@ -33,7 +33,7 @@ import Foundation
 */
 class OperationQueue: Foundation.OperationQueue {
     weak var delegate: OperationQueueDelegate?
-    
+
     override func addOperation(_ operation: Foundation.Operation) {
         if let op = operation as? Operation {
             // Set up a `BlockObserver` to invoke the `OperationQueueDelegate` method.
@@ -49,25 +49,25 @@ class OperationQueue: Foundation.OperationQueue {
                 }
             )
             op.addObserver(delegate)
-            
+
             // Extract any dependencies needed by this operation.
             let dependencies = op.conditions.compactMap {
                 $0.dependencyForOperation(op)
             }
-                
+
             for dependency in dependencies {
                 op.addDependency(dependency)
 
                 self.addOperation(dependency)
             }
-            
+
             /*
                 With condition dependencies added, we can now see if this needs
                 dependencies to enforce mutual exclusivity.
             */
             let concurrencyCategories: [String] = op.conditions.compactMap { condition in
                 if !type(of: condition).isMutuallyExclusive { return nil }
-                
+
                 return "\(type(of: condition))"
             }
 
@@ -76,20 +76,19 @@ class OperationQueue: Foundation.OperationQueue {
                 let exclusivityController = ExclusivityController.sharedExclusivityController
 
                 exclusivityController.addOperation(op, categories: concurrencyCategories)
-                
+
                 op.addObserver(BlockObserver { operation, _ in
                     exclusivityController.removeOperation(operation, categories: concurrencyCategories)
                 })
             }
-            
+
             /*
                 Indicate to the operation that we've finished our extra work on it
                 and it's now it a state where it can proceed with evaluating conditions,
                 if appropriate.
             */
             op.willEnqueue()
-        }
-        else {
+        } else {
             /*
                 For regular `NSOperation`s, we'll manually call out to the queue's
                 delegate we don't want to just capture "operation" because that
@@ -101,11 +100,11 @@ class OperationQueue: Foundation.OperationQueue {
                 queue.delegate?.operationQueue?(queue, operationDidFinish: operation, withErrors: [])
             }
         }
-        
+
         delegate?.operationQueue?(self, willAddOperation: operation)
         super.addOperation(operation)
     }
-    
+
     override func addOperations(_ operations: [Foundation.Operation], waitUntilFinished wait: Bool) {
         /*
             The base implementation of this method does not call `addOperation()`,
@@ -114,7 +113,7 @@ class OperationQueue: Foundation.OperationQueue {
         for operation in operations {
             addOperation(operation)
         }
-        
+
         if wait {
             for operation in operations {
               operation.waitUntilFinished()

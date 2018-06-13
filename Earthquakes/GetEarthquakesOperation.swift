@@ -11,12 +11,12 @@ import CoreData
 /// A composite `Operation` to both download and parse earthquake data.
 class GetEarthquakesOperation: GroupOperation {
     // MARK: Properties
-    
+
     let downloadOperation: DownloadEarthquakesOperation
     let parseOperation: ParseEarthquakesOperation
-   
+
     fileprivate var hasProducedAlert = false
-    
+
     /**
         - parameter context: The `NSManagedObjectContext` into which the parsed
                              Earthquakes will be imported.
@@ -29,7 +29,7 @@ class GetEarthquakesOperation: GroupOperation {
         let cachesFolder = try! FileManager.default.url(for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
 
         let cacheFile = cachesFolder.appendingPathComponent("earthquakes.json")
-        
+
         /*
             This operation is made of three child operations:
             1. The operation to download the JSON feed
@@ -38,48 +38,48 @@ class GetEarthquakesOperation: GroupOperation {
         */
         downloadOperation = DownloadEarthquakesOperation(cacheFile: cacheFile)
         parseOperation = ParseEarthquakesOperation(cacheFile: cacheFile, context: context)
-        
+
         let finishOperation = BlockOperation(block: completionHandler)
-        
+
         // These operations must be executed in order
         parseOperation.addDependency(downloadOperation)
         finishOperation.addDependency(parseOperation)
-        
+
         super.init(operations: [downloadOperation, parseOperation, finishOperation])
 
         name = "Get Earthquakes"
     }
-    
+
     override func operationDidFinish(_ operation: Foundation.Operation, withErrors errors: [NSError]) {
         if let firstError = errors.first, (operation === downloadOperation || operation === parseOperation) {
             produceAlert(firstError)
         }
     }
-    
+
     fileprivate func produceAlert(_ error: NSError) {
         /*
             We only want to show the first error, since subsequent errors might
             be caused by the first.
         */
         if hasProducedAlert { return }
-        
+
         let alert = AlertOperation()
-        
+
         let errorReason = (error.domain, error.code, error.userInfo[OperationConditionKey] as? String)
-        
+
         // These are examples of errors for which we might choose to display an error to the user
         let failedReachability = (OperationErrorDomain, OperationErrorCode.conditionFailed, ReachabilityCondition.name)
-        
+
         let failedJSON = (NSCocoaErrorDomain, NSPropertyListReadCorruptError, nil as String?)
 
         switch errorReason {
             case failedReachability:
                 // We failed because the network isn't reachable.
                 let hostURL = error.userInfo[ReachabilityCondition.hostKey] as! URL
-                
+
                 alert.title = "Unable to Connect"
                 alert.message = "Cannot connect to \(hostURL.host!). Make sure your device is connected to the internet and try again."
-            
+
             case failedJSON:
                 // We failed because the JSON was malformed.
                 alert.title = "Unable to Download"
@@ -88,7 +88,7 @@ class GetEarthquakesOperation: GroupOperation {
             default:
                 return
         }
-        
+
         produceOperation(alert)
         hasProducedAlert = true
     }

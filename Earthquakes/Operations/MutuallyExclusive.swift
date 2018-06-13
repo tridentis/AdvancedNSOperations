@@ -17,13 +17,13 @@ struct MutuallyExclusive<T>: OperationCondition {
     static var isMutuallyExclusive: Bool {
         return true
     }
-    
+
     init() { }
-    
+
     func dependencyForOperation(_ operation: Operation) -> Foundation.Operation? {
         return nil
     }
-    
+
     func evaluateForOperation(_ operation: Operation, completion: @escaping (OperationConditionResult) -> Void) {
         completion(.satisfied)
     }

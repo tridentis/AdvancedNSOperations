@@ -21,33 +21,33 @@ private var URLSessionTaksOperationKVOContext = 0
 
     An example usage of `URLSessionTaskOperation` can be seen in the `DownloadEarthquakesOperation`.
 */
-class URLSessionTaskOperation:Operation{
+class URLSessionTaskOperation: Operation {
     let task: URLSessionTask
-    
+
     init(task: URLSessionTask) {
         assert(task.state == .suspended, "Tasks must be suspended.")
         self.task = task
         super.init()
     }
-    
+
     override func execute() {
         assert(task.state == .suspended, "Task was resumed by something other than \(self).")
 
         task.addObserver(self, forKeyPath: "state", options: [], context: &URLSessionTaksOperationKVOContext)
-        
+
         task.resume()
     }
-    
-    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey: Any]?, context: UnsafeMutableRawPointer?) {
         guard context == &URLSessionTaksOperationKVOContext,
             let objectTask = object as? URLSessionTask else { return }
-        
+
         if objectTask === task && keyPath == "state" && task.state == .completed {
             task.removeObserver(self, forKeyPath: "state")
             finish()
         }
     }
-    
+
     override func cancel() {
         task.cancel()
         super.cancel()

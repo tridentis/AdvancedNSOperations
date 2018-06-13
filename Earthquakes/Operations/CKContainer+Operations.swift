@@ -38,12 +38,10 @@ private func verifyAccountStatus(_ container: CKContainer, permission: CKApplica
         if accountStatus == .available {
             if permission != [] {
                 verifyPermission(container, permission: permission, shouldRequest: shouldRequest, completion: completion)
-            }
-            else {
+            } else {
                 completion(nil)
             }
-        }
-        else {
+        } else {
             let error = accountError ?? NSError(domain: CKErrorDomain, code: CKError.notAuthenticated.rawValue, userInfo: nil)
             completion(error as NSError)
         }
@@ -54,11 +52,9 @@ private func verifyPermission(_ container: CKContainer, permission: CKApplicatio
     container.status(forApplicationPermission: permission) { permissionStatus, permissionError in
         if permissionStatus == .granted {
             completion(nil)
-        }
-        else if permissionStatus == .initialState && shouldRequest {
+        } else if permissionStatus == .initialState && shouldRequest {
             requestPermission(container, permission: permission, completion: completion)
-        }
-        else {
+        } else {
             let error = permissionError ?? NSError(domain: CKErrorDomain, code: CKError.permissionFailure.rawValue, userInfo: nil)
             completion(error as NSError)
         }
@@ -70,8 +66,7 @@ private func requestPermission(_ container: CKContainer, permission: CKApplicati
         container.requestApplicationPermission(permission) { requestStatus, requestError in
             if requestStatus == .granted {
                 completion(nil)
-            }
-            else {
+            } else {
                 let error = requestError ?? NSError(domain: CKErrorDomain, code: CKError.permissionFailure.rawValue, userInfo: nil)
                 completion(error as NSError)
             }

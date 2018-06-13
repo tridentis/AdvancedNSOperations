@@ -12,9 +12,9 @@ import Foundation
 typealias OperationBlock = ( @escaping () -> Void) -> Void
 
 /// A sublcass of `Operation` to execute a closure.
-class YMBlockOperation: Operation{
+class YMBlockOperation: Operation {
     fileprivate let block: OperationBlock?
-    
+
     /**
         The designated initializer.
         
@@ -28,7 +28,7 @@ class YMBlockOperation: Operation{
         self.block = block
         super.init()
     }
-    
+
     /**
         A convenience initializer to execute a block on the main queue.
         
@@ -37,7 +37,7 @@ class YMBlockOperation: Operation{
             the designated initializer). The operation will be automatically ended
             after the `mainQueueBlock` is executed.
     */
-    convenience init(mainQueueBlock: @escaping ()->()) {
+    convenience init(mainQueueBlock: @escaping ()->Void) {
         self.init(block: { continuation in
             DispatchQueue.main.async {
                 mainQueueBlock()
@@ -45,13 +45,13 @@ class YMBlockOperation: Operation{
             }
         })
     }
-    
+
     override func execute() {
         guard let block = block else {
             finish()
             return
         }
-        
+
         block {
             self.finish()
         }

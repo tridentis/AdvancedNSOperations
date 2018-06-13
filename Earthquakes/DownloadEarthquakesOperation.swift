@@ -12,15 +12,15 @@ class DownloadEarthquakesOperation: GroupOperation {
     // MARK: Properties
 
     let cacheFile: URL
-    
+
     // MARK: Initialization
-    
+
     /// - parameter cacheFile: The file `NSURL` to which the earthquake feed will be downloaded.
     init(cacheFile: URL) {
         self.cacheFile = cacheFile
         super.init(operations: [])
         name = "Download Earthquakes"
-        
+
         /*
             Since this server is out of our control and does not offer a secure
             communication channel, we'll use the http version of the URL and have
@@ -32,19 +32,19 @@ class DownloadEarthquakesOperation: GroupOperation {
         let url = URL(string: "http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson")!
         let task = URLSession.shared.downloadTask(with: url, completionHandler: { url, response, error in
             self.downloadFinished(url, response: response as? HTTPURLResponse, error: error as NSError?)
-        }) 
-        
+        })
+
         let taskOperation = URLSessionTaskOperation(task: task)
-        
+
         let reachabilityCondition = ReachabilityCondition(host: url)
         taskOperation.addCondition(reachabilityCondition)
 
         let networkObserver = NetworkObserver()
         taskOperation.addObserver(networkObserver)
-        
+
         addOperation(taskOperation)
     }
-    
+
     func downloadFinished(_ url: URL?, response: HTTPURLResponse?, error: NSError?) {
         if let localURL = url {
             do {
@@ -53,21 +53,17 @@ class DownloadEarthquakesOperation: GroupOperation {
                     Also, swallow the error, because we don't really care about it.
                 */
                 try FileManager.default.removeItem(at: cacheFile)
-            }
-            catch { }
-            
+            } catch { }
+
             do {
                 try FileManager.default.moveItem(at: localURL, to: cacheFile)
-            }
-            catch let error as NSError {
+            } catch let error as NSError {
                 aggregateError(error)
             }
-            
-        }
-        else if let error = error {
+
+        } else if let error = error {
             aggregateError(error)
-        }
-        else {
+        } else {
             // Do nothing, and the operation will automatically finish.
         }
     }

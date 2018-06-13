@@ -18,34 +18,32 @@ struct ReachabilityCondition: OperationCondition {
     static let hostKey = "Host"
     static let name = "Reachability"
     static let isMutuallyExclusive = false
-    
+
     let host: URL
-    
-    
+
     init(host: URL) {
         self.host = host
     }
-    
+
     func dependencyForOperation(_ operation: Operation) -> Foundation.Operation? {
         return nil
     }
-    
+
     func evaluateForOperation(_ operation: Operation, completion: @escaping (OperationConditionResult) -> Void) {
         ReachabilityController.requestReachability(host) { reachable in
             if reachable {
                 completion(.satisfied)
-            }
-            else {
+            } else {
                 let error = NSError(code: .conditionFailed, userInfo: [
                     OperationConditionKey: type(of: self).name,
                     type(of: self).hostKey: self.host
                 ])
-                
+
                 completion(.failed(error))
             }
         }
     }
-    
+
 }
 
 /// A private singleton that maintains a basic cache of `SCNetworkReachability` objects.
@@ -53,7 +51,7 @@ private class ReachabilityController {
     static var reachabilityRefs = [String: SCNetworkReachability]()
 
     static let reachabilityQueue = DispatchQueue(label: "Operations.Reachability", attributes: [])
-    
+
     static func requestReachability(_ url: URL, completionHandler: @escaping (Bool) -> Void) {
         if let host = url.host {
             reachabilityQueue.async {
@@ -63,10 +61,10 @@ private class ReachabilityController {
                     let hostString = host as NSString
                     ref = SCNetworkReachabilityCreateWithName(nil, hostString.utf8String!)
                 }
-                
+
                 if let ref = ref {
                     self.reachabilityRefs[host] = ref
-                    
+
                     var reachable = false
                     var flags: SCNetworkReachabilityFlags = []
                     if SCNetworkReachabilityGetFlags(ref, &flags) {
@@ -79,13 +77,11 @@ private class ReachabilityController {
                         reachable = flags.contains(.reachable)
                     }
                     completionHandler(reachable)
-                }
-                else {
+                } else {
                     completionHandler(false)
                 }
             }
-        }
-        else {
+        } else {
             completionHandler(false)
         }
     }

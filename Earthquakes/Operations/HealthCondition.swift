@@ -7,7 +7,7 @@ This file shows an example of implementing the OperationCondition protocol.
 */
 
 #if os(iOS)
-    
+
 import HealthKit
 import UIKit
 
@@ -20,10 +20,10 @@ struct HealthCondition: OperationCondition {
     static let healthDataAvailable = "HealthDataAvailable"
     static let unauthorizedShareTypesKey = "UnauthorizedShareTypes"
     static let isMutuallyExclusive = false
-    
+
     let shareTypes: Set<HKSampleType>
     let readTypes: Set<HKSampleType>
-    
+
     /**
         The designated initializer.
         
@@ -37,19 +37,19 @@ struct HealthCondition: OperationCondition {
         shareTypes = typesToWrite
         readTypes = typesToRead
     }
-    
+
     func dependencyForOperation(_ operation: Operation) -> Foundation.Operation? {
         guard HKHealthStore.isHealthDataAvailable() else {
             return nil
         }
-        
+
         guard !shareTypes.isEmpty || !readTypes.isEmpty else {
             return nil
         }
 
         return HealthPermissionOperation(shareTypes: shareTypes, readTypes: readTypes)
     }
-    
+
     func evaluateForOperation(_ operation: Operation, completion: @escaping (OperationConditionResult) -> Void) {
         guard HKHealthStore.isHealthDataAvailable() else {
             failed(shareTypes, completion: completion)
@@ -73,12 +73,11 @@ struct HealthCondition: OperationCondition {
 
         if !unauthorizedShareTypes.isEmpty {
             failed(Set(unauthorizedShareTypes), completion: completion)
-        }
-        else {
+        } else {
             completion(.satisfied)
         }
     }
-    
+
     // Break this out in to its own method so we don't clutter up the evaluate... method.
     fileprivate func failed(_ unauthorizedShareTypes: Set<HKSampleType>, completion: (OperationConditionResult) -> Void) {
         let error = NSError(code: .conditionFailed, userInfo: [
@@ -95,21 +94,21 @@ struct HealthCondition: OperationCondition {
     A private `Operation` that will request access to the user's health data, if
     it has not already been granted.
 */
-private class HealthPermissionOperation:Operation{
+private class HealthPermissionOperation: Operation {
     let shareTypes: Set<HKSampleType>
     let readTypes: Set<HKSampleType>
-    
+
     init(shareTypes: Set<HKSampleType>, readTypes: Set<HKSampleType>) {
         self.shareTypes = shareTypes
         self.readTypes = readTypes
-        
+
         super.init()
 
         addCondition(MutuallyExclusive<HealthPermissionOperation>())
         addCondition(MutuallyExclusive<UIViewController>())
         addCondition(AlertPresentation())
     }
-    
+
     override func execute() {
         DispatchQueue.main.async {
             let store = HKHealthStore()
@@ -118,12 +117,12 @@ private class HealthPermissionOperation:Operation{
                 has already been granted.
             */
 
-            store.requestAuthorization(toShare: self.shareTypes, read: self.readTypes) { completed, error in
+            store.requestAuthorization(toShare: self.shareTypes, read: self.readTypes) { _, _ in
                 self.finish()
             }
         }
     }
-    
+
 }
-    
+
 #endif

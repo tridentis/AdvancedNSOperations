@@ -16,24 +16,24 @@ import Foundation
 */
 struct SilentCondition<T: OperationCondition>: OperationCondition {
     let condition: T
-    
+
     static var name: String {
         return "Silent<\(T.name)>"
     }
-    
+
     static var isMutuallyExclusive: Bool {
         return T.isMutuallyExclusive
     }
-    
+
     init(condition: T) {
         self.condition = condition
     }
-    
+
     func dependencyForOperation(_ operation: Operation) -> Foundation.Operation? {
         // Returning nil means we will never a dependency to be generated.
         return nil
     }
-    
+
     func evaluateForOperation(_ operation: Operation, completion: @escaping (OperationConditionResult) -> Void) {
         condition.evaluateForOperation(operation, completion: completion)
     }

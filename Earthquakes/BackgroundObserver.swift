@@ -20,41 +20,41 @@ class BackgroundObserver: NSObject, OperationObserver {
 
     fileprivate var identifier = UIBackgroundTaskInvalid
     fileprivate var isInBackground = false
-    
+
     override init() {
         super.init()
-        
+
         // We need to know when the application moves to/from the background.
         NotificationCenter.default.addObserver(self, selector: #selector(BackgroundObserver.didEnterBackground(_:)), name: NSNotification.Name.UIApplicationDidEnterBackground, object: nil)
 
         NotificationCenter.default.addObserver(self, selector: #selector(BackgroundObserver.didEnterForeground(_:)), name: NSNotification.Name.UIApplicationDidBecomeActive, object: nil)
-        
+
         isInBackground = UIApplication.shared.applicationState == .background
-        
+
         // If we're in the background already, immediately begin the background task.
         if isInBackground {
             startBackgroundTask()
         }
     }
-    
+
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
-    
+
     @objc func didEnterBackground(_ notification: Notification) {
         if !isInBackground {
             isInBackground = true
             startBackgroundTask()
         }
     }
-    
+
     @objc func didEnterForeground(_ notification: Notification) {
         if isInBackground {
             isInBackground = false
             endBackgroundTask()
         }
     }
-    
+
     fileprivate func startBackgroundTask() {
         if identifier == UIBackgroundTaskInvalid {
             identifier = UIApplication.shared.beginBackgroundTask(withName: "BackgroundObserver", expirationHandler: {
@@ -62,18 +62,18 @@ class BackgroundObserver: NSObject, OperationObserver {
             })
         }
     }
-    
+
     fileprivate func endBackgroundTask() {
         if identifier != UIBackgroundTaskInvalid {
             UIApplication.shared.endBackgroundTask(identifier)
             identifier = UIBackgroundTaskInvalid
         }
     }
-    
-    // MARK:YMOperationObserver
-    
+
+    // MARK: YMOperationObserver
+
     func operationDidStart(_ operation: Operation) { }
-    
+
     func operation(_ operation: Operation, didProduceOperation newOperation: Foundation.Operation) { }
 
     func operationDidFinish(_ operation: Operation, errors: [NSError]) {

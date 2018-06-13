@@ -17,25 +17,25 @@ struct NegatedCondition<T: OperationCondition>: OperationCondition {
     static var name: String {
         return "Not<\(T.name)>"
     }
-    
+
     static var negatedConditionKey: String {
         return "NegatedCondition"
     }
-    
+
     static var isMutuallyExclusive: Bool {
         return T.isMutuallyExclusive
     }
-    
+
     let condition: T
 
     init(condition: T) {
         self.condition = condition
     }
-    
+
     func dependencyForOperation(_ operation: Operation) -> Foundation.Operation? {
         return condition.dependencyForOperation(operation)
     }
-    
+
     func evaluateForOperation(_ operation: Operation, completion: @escaping (OperationConditionResult) -> Void) {
         condition.evaluateForOperation(operation) { result in
             if result == .satisfied {
@@ -44,10 +44,9 @@ struct NegatedCondition<T: OperationCondition>: OperationCondition {
                     OperationConditionKey: type(of: self).name,
                     type(of: self).negatedConditionKey: type(of: self.condition).name
                     ])
-                
+
                 completion(.failed(error))
-            }
-            else {
+            } else {
                 // If the composed condition failed, then this one succeeded.
                 completion(.satisfied)
             }

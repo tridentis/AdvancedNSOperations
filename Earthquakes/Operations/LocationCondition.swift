@@ -18,26 +18,26 @@ struct LocationCondition: OperationCondition {
         case whenInUse
         case always
     }
-    
+
     static let name = "Location"
     static let locationServicesEnabledKey = "CLLocationServicesEnabled"
     static let authorizationStatusKey = "CLAuthorizationStatus"
     static let isMutuallyExclusive = false
-    
+
     let usage: Usage
-    
+
     init(usage: Usage) {
         self.usage = usage
     }
-    
+
     func dependencyForOperation(_ operation: Operation) -> Foundation.Operation? {
         return LocationPermissionOperation(usage: usage)
     }
-    
+
     func evaluateForOperation(_ operation: Operation, completion: @escaping (OperationConditionResult) -> Void) {
         let enabled = CLLocationManager.locationServicesEnabled()
         let actual = CLLocationManager.authorizationStatus()
-        
+
         var error: NSError?
 
         // There are several factors to consider when evaluating this condition
@@ -68,11 +68,10 @@ struct LocationCondition: OperationCondition {
                     type(of: self).authorizationStatusKey: Int(actual.rawValue)
                 ])
         }
-        
+
         if let error = error {
             completion(.failed(error))
-        }
-        else {
+        } else {
             completion(.satisfied)
         }
     }
@@ -82,10 +81,10 @@ struct LocationCondition: OperationCondition {
     A private `Operation` that will request permission to access the user's location,
     if permission has not already been granted.
 */
-private class LocationPermissionOperation:Operation{
+private class LocationPermissionOperation: Operation {
     let usage: LocationCondition.Usage
     var manager: CLLocationManager?
-    
+
     init(usage: LocationCondition.Usage) {
         self.usage = usage
         super.init()
@@ -95,7 +94,7 @@ private class LocationPermissionOperation:Operation{
         */
         addCondition(AlertPresentation())
     }
-    
+
     override func execute() {
         /*
             Not only do we need to handle the "Not Determined" case, but we also
@@ -111,27 +110,27 @@ private class LocationPermissionOperation:Operation{
                 finish()
         }
     }
-    
+
     fileprivate func requestPermission() {
         manager = CLLocationManager()
         manager?.delegate = self
 
         let key: String
-        
+
         switch usage {
             case .whenInUse:
                 key = "NSLocationWhenInUseUsageDescription"
                 manager?.requestWhenInUseAuthorization()
-        
+
             case .always:
                 key = "NSLocationAlwaysUsageDescription"
                 manager?.requestAlwaysAuthorization()
         }
-        
+
         // This is helpful when developing the app.
         assert(Bundle.main.object(forInfoDictionaryKey: key) != nil, "Requesting location permission requires the \(key) key in your Info.plist")
     }
-    
+
 }
 
 extension LocationPermissionOperation: CLLocationManagerDelegate {

@@ -13,17 +13,17 @@ import Foundation
     operation lifecycle events.
 */
 protocol OperationObserver {
-    
+
     /// Invoked immediately prior to the `Operation`'s `execute()` method.
     func operationDidStart(_ operation: Operation)
-    
+
     /// Invoked when `Operation.produceOperation(_:)` is executed.
     func operation(_ operation: Operation, didProduceOperation newOperation: Foundation.Operation)
-    
+
     /**
         Invoked as an `Operation` finishes, along with any errors produced during
         execution (or readiness evaluation).
     */
     func operationDidFinish(_ operation: Operation, errors: [NSError])
-    
+
 }

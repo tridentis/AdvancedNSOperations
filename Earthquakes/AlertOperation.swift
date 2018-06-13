@@ -13,7 +13,7 @@ class AlertOperation: Operation {
 
     fileprivate let alertController = UIAlertController(title: nil, message: nil, preferredStyle: .alert)
     fileprivate let presentationContext: UIViewController?
-    
+
     var title: String? {
         get {
             return alertController.title
@@ -24,26 +24,26 @@ class AlertOperation: Operation {
             name = newValue
         }
     }
-    
+
     var message: String? {
         get {
             return alertController.message
         }
-        
+
         set {
             alertController.message = newValue
         }
     }
-    
+
     // MARK: Initialization
-    
+
     init(presentationContext: UIViewController? = nil) {
         self.presentationContext = presentationContext ?? UIApplication.shared.keyWindow?.rootViewController
 
         super.init()
-        
+
         addCondition(AlertPresentation())
-        
+
         /*
             This operation modifies the view controller hierarchy.
             Doing this while other such operations are executing can lead to
@@ -51,7 +51,7 @@ class AlertOperation: Operation {
         */
         addCondition(MutuallyExclusive<UIViewController>())
     }
-    
+
     func addAction(_ title: String, style: UIAlertActionStyle = .default, handler: @escaping (AlertOperation) -> Void = { _ in }) {
         let action = UIAlertAction(title: title, style: style) { [weak self] _ in
             if let strongSelf = self {
@@ -60,10 +60,10 @@ class AlertOperation: Operation {
 
             self?.finish()
         }
-        
+
         alertController.addAction(action)
     }
-    
+
     override func execute() {
         guard let presentationContext = presentationContext else {
             finish()
@@ -75,7 +75,7 @@ class AlertOperation: Operation {
             if self.alertController.actions.isEmpty {
                 self.addAction("OK")
             }
-            
+
             presentationContext.present(self.alertController, animated: true, completion: nil)
         }
     }

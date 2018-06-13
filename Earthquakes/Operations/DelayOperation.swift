@@ -20,33 +20,33 @@ import Foundation
     If the interval is negative, or the `NSDate` is in the past, then this operation
     immediately finishes.
 */
-class DelayOperation:Operation{
+class DelayOperation: Operation {
     // MARK: Types
 
     fileprivate enum Delay {
         case interval(TimeInterval)
         case date(Foundation.Date)
     }
-    
+
     // MARK: Properties
-    
+
     fileprivate let delay: Delay
-    
+
     // MARK: Initialization
-    
+
     init(interval: TimeInterval) {
         delay = .interval(interval)
         super.init()
     }
-    
+
     init(until date: Date) {
         delay = .date(date)
         super.init()
     }
-    
+
     override func execute() {
         let interval: TimeInterval
-        
+
         // Figure out how long we should wait for.
         switch delay {
             case .interval(let theInterval):
@@ -55,7 +55,7 @@ class DelayOperation:Operation{
             case .date(let date):
                 interval = date.timeIntervalSinceNow
         }
-        
+
         guard interval > 0 else {
             finish()
             return
@@ -69,7 +69,7 @@ class DelayOperation:Operation{
             }
         }
     }
-    
+
     override func cancel() {
         super.cancel()
         // Cancelling the operation means we don't want to wait anymore.

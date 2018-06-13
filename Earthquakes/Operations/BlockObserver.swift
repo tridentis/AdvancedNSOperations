@@ -14,27 +14,27 @@ import Foundation
 */
 struct BlockObserver: OperationObserver {
     // MARK: Properties
-    
+
     fileprivate let startHandler: ((Operation) -> Void)?
     fileprivate let produceHandler: ((Operation, Foundation.Operation) -> Void)?
     fileprivate let finishHandler: ((Operation, [NSError]) -> Void)?
-    
+
     init(startHandler: ((Operation) -> Void)? = nil, produceHandler: ((Operation, Foundation.Operation) -> Void)? = nil, finishHandler: ((Operation, [NSError]) -> Void)? = nil) {
         self.startHandler = startHandler
         self.produceHandler = produceHandler
         self.finishHandler = finishHandler
     }
-    
+
     // MARK: OperationObserver
-    
+
     func operationDidStart(_ operation: Operation) {
         startHandler?(operation)
     }
-    
+
     func operation(_ operation: Operation, didProduceOperation newOperation: Foundation.Operation) {
         produceHandler?(operation, newOperation)
     }
-    
+
     func operationDidFinish(_ operation: Operation, errors: [NSError]) {
         finishHandler?(operation, errors)
     }
